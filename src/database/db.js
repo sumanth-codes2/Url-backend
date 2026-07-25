@@ -1,15 +1,17 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
-    console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
-    console.log("MONGODB_URI starts with:", process.env.MONGODB_URI?.substring(0, 20));
+    console.log("========== MONGODB_URI ==========");
+    console.log(process.env.MONGODB_URI);
+    console.log("=================================");
 
     await mongoose.connect(process.env.MONGODB_URI);
 
     console.log("MongoDB Connected");
   } catch (err) {
-    console.error("MongoDB Error:", err);
+    console.error("MongoDB ERROR:");
+    console.error(err);
     throw err;
   }
 };
