@@ -8,7 +8,7 @@ export class IntentClassifier {
     let detectedUrl = null;
     if (match) {
       detectedUrl = match[1];
-      if (!/^https?:\/\
+      if (!/^https?:\/\//i.test(detectedUrl)) {
         detectedUrl = 'https://' + detectedUrl;
       }
     } else {

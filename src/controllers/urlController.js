@@ -47,7 +47,7 @@ const verifyUrlReachability = async (url) => {
     return false;
   }
 
-  const isYoutube = /youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\
+  const isYoutube = /youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\//i.test(url);
   if (isYoutube) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -123,7 +123,7 @@ export const shortenUrl = async (req, res, next) => {
     const urlsToValidate = [];
 
     let mainUrl = originalUrl.trim();
-    if (!/^https?:\/\
+    if (!/^https?:\/\//i.test(mainUrl)) {
       mainUrl = 'http://' + mainUrl;
     }
     urlsToValidate.push(mainUrl);
@@ -132,7 +132,7 @@ export const shortenUrl = async (req, res, next) => {
       abDestinations.forEach((d) => {
         if (d.url && d.url.trim().length > 0) {
           let u = d.url.trim();
-          if (!/^https?:\/\
+          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
           urlsToValidate.push(u);
         }
       });
@@ -142,7 +142,7 @@ export const shortenUrl = async (req, res, next) => {
       geoTargets.forEach((g) => {
         if (g.url && g.url.trim().length > 0) {
           let u = g.url.trim();
-          if (!/^https?:\/\
+          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
           urlsToValidate.push(u);
         }
       });
@@ -152,7 +152,7 @@ export const shortenUrl = async (req, res, next) => {
       deviceTargets.forEach((d) => {
         if (d.url && d.url.trim().length > 0) {
           let u = d.url.trim();
-          if (!/^https?:\/\
+          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
           urlsToValidate.push(u);
         }
       });
@@ -162,7 +162,7 @@ export const shortenUrl = async (req, res, next) => {
       scheduledTargets.forEach((s) => {
         if (s.url && s.url.trim().length > 0) {
           let u = s.url.trim();
-          if (!/^https?:\/\
+          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
           urlsToValidate.push(u);
         }
       });
@@ -361,9 +361,7 @@ export const bulkShorten = async (req, res, next) => {
     for (const link of links) {
       try {
         let urlString = link.originalUrl.trim();
-        if (!/^https?:\/\
-          urlString = 'http://' + urlString;
-        }
+        if (!/^https?:\/\//i.test(urlString)) urlString = 'http://' + urlString;
 
         try {
           new URL(urlString);
@@ -584,9 +582,7 @@ export const updateUrl = async (req, res, next) => {
 
     if (originalUrl !== undefined) {
       let urlString = originalUrl.trim();
-      if (!/^https?:\/\
-        urlString = 'http://' + urlString;
-      }
+      if (!/^https?:\/\//i.test(urlString)) urlString = 'http://' + urlString;
       url.originalUrl = urlString;
     }
 
@@ -738,9 +734,7 @@ export const getPreview = async (req, res, next) => {
     }
 
     let urlString = originalUrl.trim();
-    if (!/^https?:\/\
-      urlString = 'http://' + urlString;
-    }
+    if (!/^https?:\/\//i.test(urlString)) urlString = 'http://' + urlString;
 
     try {
       new URL(urlString);

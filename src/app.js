@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -30,6 +32,13 @@ import {
 import { RoutingContext } from './services/ai/routing/routingStrategy.js';
 import { EmailService } from './services/email/emailService.js';
 
+let isDbConnected = false;
+const connectDB = async () => {
+  if (isDbConnected && mongoose.connection.readyState === 1) return;
+  await mongoose.connect(process.env.MONGODB_URI);
+  isDbConnected = true;
+};
+
 ServiceRegistry.register('AnalyticsAIService', new AnalyticsAIService());
 ServiceRegistry.register('MarketingAIService', new MarketingAIService());
 ServiceRegistry.register('SecurityAIService', new SecurityAIService());
@@ -55,11 +64,14 @@ app.use(morgan(morganFormat, {
   }
 }));
 
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
-    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    logger.error('DB connection failed: ' + err.message);
+    res.status(503).json({ error: 'Database unavailable' });
   }
-  next();
 });
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
