@@ -14,6 +14,11 @@ export const errorHandler = (err, req, res, next) => {
     logger.warn('Operational Error: ' + err.message + ' (Status: ' + statusCode + ')');
   }
 
+  if (req.headers.origin) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   res.status(statusCode).json({
     success: false,
     message,

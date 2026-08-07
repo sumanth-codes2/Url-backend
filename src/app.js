@@ -54,6 +54,14 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With']
+}));
+app.options('*', cors());
+
 app.use(compression());
 app.use(cookieParser());
 
@@ -74,17 +82,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
-
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With']
-}));
-app.options('*', cors());
 
 
 
