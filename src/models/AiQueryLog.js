@@ -23,8 +23,6 @@ const AiQueryLogSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
-// Index to quickly search/count logs in recent intervals
 AiQueryLogSchema.index({ createdAt: -1 });
 
 export default mongoose.model('AiQueryLog', AiQueryLogSchema);

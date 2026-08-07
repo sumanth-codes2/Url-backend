@@ -16,8 +16,8 @@ const validateRequest = (req, res, next) => {
 export const validateRegister = [
   body('username')
     .trim()
-    .isAlphanumeric()
-    .withMessage('Username must contain only letters and numbers')
+    .matches(/^[a-zA-Z0-9_-]+$/)
+    .withMessage('Username can only contain letters, numbers, underscores, and hyphens')
     .isLength({ min: 3, max: 30 })
     .withMessage('Username must be between 3 and 30 characters long'),
   body('email')
@@ -28,7 +28,7 @@ export const validateRegister = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
   validateRequest
 ];

@@ -3,18 +3,15 @@ import logger from '../../../shared/logger/logger.js';
 export class IntentClassifier {
   static classify(queryText, discussedShortcodes, urls) {
     const query = queryText.toLowerCase().trim();
-    
-    // 1. Detect if query contains a URL
     const urlRegex = /(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/i;
     const match = query.match(urlRegex);
     let detectedUrl = null;
     if (match) {
       detectedUrl = match[1];
-      if (!/^https?:\/\//i.test(detectedUrl)) {
+      if (!/^https?:\/\
         detectedUrl = 'https://' + detectedUrl;
       }
     } else {
-      // Try to match a domain name without protocol (e.g. google.com, github.com)
       const domainRegex = /\b([a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(?:\/[^\s\)]*)?)/i;
       const domainMatch = query.match(domainRegex);
       if (domainMatch) {
@@ -25,8 +22,6 @@ export class IntentClassifier {
         }
       }
     }
-
-    // 2. Check if the detected URL is a shortened workspace link
     let isShortened = false;
     let shortCodeResolved = null;
     if (detectedUrl) {
@@ -51,8 +46,6 @@ export class IntentClassifier {
         }
       }
     }
-
-    // 3. If it's a public URL (NOT shortened) and the user didn't explicitly ask for database keywords
     const dbKeywords = ['my links', 'my workspace', 'my dashboard', 'my analytics', 'my campaigns', 'my folders', 'my workspaces'];
     const hasDbKeyword = dbKeywords.some(kw => query.includes(kw));
 
@@ -64,8 +57,6 @@ export class IntentClassifier {
         return { intent: 'PUBLIC_WEBSITE_ANALYSIS', targetUrlText: detectedUrl, targetUrl: null };
       }
     }
-
-    // 4. If it's a shortened URL, resolve targetUrl and proceed
     let targetUrl = shortCodeResolved || null;
     const refKeywords = ['this link', 'that url', 'this campaign', 'the previous one', 'the first link', 'the second link', 'it', 'them', 'those links', 'this shortened url'];
     const matchesRef = refKeywords.some(k => query.includes(k));
@@ -86,8 +77,6 @@ export class IntentClassifier {
         }
       }
     }
-
-    // Database-related queries (Intent-based database routing)
     if (query.includes('youtube') || query.includes('youtu.be')) {
       logger.info('IntentClassifier: DB_YOUTUBE_LINKS match');
       return { intent: 'DB_YOUTUBE_LINKS', targetUrl: null };
@@ -124,8 +113,6 @@ export class IntentClassifier {
       logger.info('IntentClassifier: DB_PASSWORD_PROTECTED match');
       return { intent: 'DB_PASSWORD_PROTECTED', targetUrl: null };
     }
-
-    // Generic domain search parsing
     const domainMatch = query.match(/(?:show|find|list|get|search)\s+(?:all\s+)?([a-zA-Z0-9.-]+)\s+links/i) ||
                         query.match(/(?:show|find|list|get|search)\s+links\s+(?:from|for)\s+([a-zA-Z0-9.-]+)/i);
     if (domainMatch) {
@@ -138,8 +125,6 @@ export class IntentClassifier {
       logger.info('IntentClassifier: DB_ALL_LINKS match');
       return { intent: 'DB_ALL_LINKS', targetUrl: null };
     }
-
-    // Standard analytical conversational queries
     let intent = 'GENERAL_CONVERSATION';
     const greetings = ['hi', 'hello', 'hey', 'how are you', 'good morning', 'good afternoon', 'greetings'];
     const isGreeting = greetings.some(g => query === g || query.startsWith(g + ' '));

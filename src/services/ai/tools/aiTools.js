@@ -4,7 +4,7 @@ export class AITools {
   static async fetchAnalyticsSummary(urlIds) {
     const startOfToday = new Date();
     startOfToday.setHours(0,0,0,0);
-    
+
     const todayLogs = await Analytics.find({
       urlId: { $in: urlIds },
       timestamp: { $gte: startOfToday }
@@ -43,7 +43,7 @@ export class AITools {
     const cleanTitle = link.title || 'Referral Portal';
     const cleanCategory = link.category || 'Business';
     const shortUrl = `https://bityl.glow/${link.shortCode}`;
-    
+
     return {
       category: cleanCategory,
       title: cleanTitle,

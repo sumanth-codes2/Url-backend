@@ -10,7 +10,7 @@ export const getWorkspaces = async (req, res, next) => {
   try {
     const workspaces = await workspaceRepository.findByUser(req.user.id);
     const ownedWorkspaces = await workspaceRepository.findOwnedByUser(req.user.id);
-    
+
     const allWorkspacesMap = new Map();
     [...workspaces, ...ownedWorkspaces].forEach(w => allWorkspacesMap.set(w._id.toString(), w));
     const allWorkspaces = Array.from(allWorkspacesMap.values());
@@ -101,9 +101,9 @@ export const switchWorkspace = async (req, res, next) => {
       throw new NotFoundError('Workspace not found');
     }
 
-    const isMember = workspace.owner.toString() === req.user.id || 
+    const isMember = workspace.owner.toString() === req.user.id ||
                      workspace.members.some(m => m.user.toString() === req.user.id);
-    
+
     if (!isMember) {
       throw new ForbiddenError('You are not a member of this workspace');
     }
@@ -180,7 +180,7 @@ export const deleteFolder = async (req, res, next) => {
       throw new NotFoundError('Workspace not found');
     }
 
-    const isMember = workspace.owner.toString() === req.user.id || 
+    const isMember = workspace.owner.toString() === req.user.id ||
                      workspace.members.some(m => m.user.toString() === req.user.id && (m.role === 'admin' || m.role === 'editor'));
     if (!isMember) {
       throw new ForbiddenError('Insufficient workspace permissions');
@@ -264,7 +264,6 @@ export const removeMember = async (req, res, next) => {
           'workspace'
         );
       } catch (err) {
-        // Safe fail
       }
     }
 

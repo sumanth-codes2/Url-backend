@@ -5,7 +5,7 @@ const geoCache = new Map();
 export class GeoIpService {
   static async lookup(ipAddress) {
     const cleanIp = ipAddress.trim().replace(/^::ffff:/, '');
-    
+
     if (geoCache.has(cleanIp)) {
       return geoCache.get(cleanIp);
     }

@@ -16,8 +16,6 @@ export class ContextBuilder {
       intent,
       isDatabaseQuery: false
     };
-
-    // Helper to get active workspace id if not available
     let activeWorkspaceId = null;
     if (userId) {
       try {
@@ -27,8 +25,6 @@ export class ContextBuilder {
         logger.error('ContextBuilder: Error resolving user active workspace: ' + err.message);
       }
     }
-
-    // Process database and public crawler intents
     switch (intent) {
       case 'PUBLIC_WEBSITE_ANALYSIS': {
         data.isPublicWebsite = true;
@@ -37,26 +33,22 @@ export class ContextBuilder {
           try {
             const parsedUrl = new URL(targetUrlText);
             const hostname = parsedUrl.hostname.toLowerCase();
-            
-            // Check if hostname is local or private
             const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.endsWith('.local');
-            
+
             if (isLocal) {
               data.isAuthProtected = true;
               data.authReason = 'This URL belongs to an internal, local, or private network resource that is not accessible from the public internet.';
               data.websiteSummary = { url: targetUrlText };
               break;
             }
-
-            // Perform reachability and auth check
             let statusCode = 200;
             let isAuthProtected = false;
             let authReason = '';
-            
+
             try {
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), 4000);
-              const testRes = await fetch(targetUrlText, { 
+              const testRes = await fetch(targetUrlText, {
                 method: 'GET',
                 headers: { 'User-Agent': 'Mozilla/5.0 BitylGlow/2.0 ReachabilityScanner' },
                 signal: controller.signal
@@ -77,13 +69,11 @@ export class ContextBuilder {
               data.websiteSummary = { url: targetUrlText };
               break;
             }
-
-            // Run standard crawler and security audit from specialized services
             logger.info(`ContextBuilder: Crawling public website: ${targetUrlText}`);
-            
+
             const intelligenceService = ServiceRegistry.get('WebsiteIntelligenceService');
             const securityService = ServiceRegistry.get('SecurityAIService');
-            
+
             const intelligence = await intelligenceService.analyzeWebsite(targetUrlText);
             const securityCheck = await securityService.detectPhishing(targetUrlText);
             const healthReport = await securityService.calculateLinkHealth(targetUrlText, true);
@@ -224,11 +214,11 @@ export class ContextBuilder {
       case 'DB_WORKSPACES': {
         data.isDatabaseQuery = true;
         if (userId) {
-          const records = await Workspace.find({ 
+          const records = await Workspace.find({
             $or: [
-              { owner: userId }, 
+              { owner: userId },
               { 'members.user': userId }
-            ] 
+            ]
           }).populate('owner', 'username email');
           data.queryResult = records.map(r => ({
             workspaceId: r._id,
@@ -261,8 +251,8 @@ export class ContextBuilder {
       case 'DB_PASSWORD_PROTECTED': {
         data.isDatabaseQuery = true;
         if (activeWorkspaceId) {
-          const records = await Url.find({ 
-            workspace: activeWorkspaceId, 
+          const records = await Url.find({
+            workspace: activeWorkspaceId,
             isArchived: false,
             $or: [
               { isPasswordProtected: true },
@@ -287,10 +277,10 @@ export class ContextBuilder {
         data.isDatabaseQuery = true;
         const keyword = classification.domainKeyword;
         if (activeWorkspaceId && keyword) {
-          const records = await Url.find({ 
-            workspace: activeWorkspaceId, 
-            originalUrl: new RegExp(keyword, 'i'), 
-            isArchived: false 
+          const records = await Url.find({
+            workspace: activeWorkspaceId,
+            originalUrl: new RegExp(keyword, 'i'),
+            isArchived: false
           });
           data.queryResult = records.map(r => ({
             originalUrl: r.originalUrl,
@@ -323,8 +313,6 @@ export class ContextBuilder {
         }
         break;
       }
-
-      // Legacy fallback analytical intents
       case 'DASHBOARD_ANALYSIS':
       case 'WORKSPACE_SUMMARY': {
         const stats = await AITools.fetchAnalyticsSummary(urlIds);

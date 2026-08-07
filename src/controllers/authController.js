@@ -56,13 +56,17 @@ export const register = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    const notificationService = ServiceRegistry.get('NotificationService');
-    await notificationService.sendNotification(
-      newUser._id.toString(),
-      'Welcome to BitylGlow!',
-      `Your default workspace "${defaultWorkspace.name}" has been initialized. Start sharing links!`,
-      'system'
-    );
+    try {
+      const notificationService = ServiceRegistry.get('NotificationService');
+      await notificationService.sendNotification(
+        newUser._id.toString(),
+        'Welcome to BitylGlow!',
+        `Your default workspace "${defaultWorkspace.name}" has been initialized. Start sharing links!`,
+        'system'
+      );
+    } catch (notifErr) {
+      logger.warn(`Could not send welcome notification to user ${newUser._id}: ${notifErr.message}`);
+    }
 
     const responseData = {
       token,
@@ -155,7 +159,7 @@ export const getProfile = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
     user.password = undefined;
-    
+
     res.json({
       success: true,
       message: 'Profile fetched successfully',
@@ -189,7 +193,7 @@ export const readNotification = async (req, res, next) => {
     }
     notification.read = true;
     await notification.save();
-    
+
     res.json({
       success: true,
       message: 'Notification marked as read',
@@ -238,8 +242,6 @@ export const forgotPassword = async (req, res, next) => {
     }
 
     logger.info(`Password Reset: User search result for "${email}" - User found.`);
-
-    // Check if user has a dashboard/workspace created
     const workspaces = await workspaceRepository.findByUser(user._id);
     if (!workspaces || workspaces.length === 0) {
       logger.warn(`Password Reset: User "${email}" exists but has no active dashboard/workspace created.`);
@@ -247,16 +249,10 @@ export const forgotPassword = async (req, res, next) => {
     }
 
     logger.info(`Password Reset: User "${email}" has active dashboard/workspace.`);
-
-    // Generate secure random 6-digit OTP using crypto
     const otp = crypto.randomInt(100000, 999999).toString();
     const hashedOTP = crypto.createHash('sha256').update(otp).digest('hex');
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    // Invalidate previous OTPs for this user
     await PasswordReset.deleteMany({ userId: user._id });
-
-    // Store secure hashed OTP in MongoDB
     await PasswordReset.create({
       userId: user._id,
       hashedOTP,
@@ -328,11 +324,7 @@ export const verifyOtp = async (req, res, next) => {
       }
       throw new BadRequestError(`Invalid verification code. ${remaining} attempts remaining.`);
     }
-
-    // Success: Delete the OTP record to prevent replay attacks
     await PasswordReset.deleteOne({ _id: resetRecord._id });
-
-    // Generate short-lived reset token (valid for 15 minutes)
     const resetToken = jwt.sign(
       { id: user._id, email: user.email, purpose: 'password-reset' },
       env.JWT_SECRET,
@@ -370,8 +362,6 @@ export const resetPassword = async (req, res, next) => {
     if (decoded.purpose !== 'password-reset') {
       throw new BadRequestError('Invalid reset signature context');
     }
-
-    // Password strength rules validation
     const minLength = 8;
     const hasUpper = /[A-Z]/.test(newPassword);
     const hasLower = /[a-z]/.test(newPassword);

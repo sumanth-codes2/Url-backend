@@ -23,8 +23,31 @@ const generateShortCode = (length = 6) => {
   return result;
 };
 
+const AUTH_REQUIRED_DOMAINS = [
+  'chatgpt.com', 'chat.openai.com', 'claude.ai',
+  'notion.so', 'figma.com', 'miro.com',
+  'docs.google.com', 'drive.google.com', 'mail.google.com',
+  'github.com', 'gitlab.com',
+  'app.slack.com', 'teams.microsoft.com',
+  'twitter.com', 'x.com', 'facebook.com', 'instagram.com',
+  'linkedin.com', 'reddit.com',
+  'netflix.com', 'spotify.com', 'canva.com',
+  'trello.com', 'asana.com', 'monday.com', 'clickup.com',
+  'dropbox.com', 'onedrive.live.com', 'sharepoint.com',
+  'jira.atlassian.com', 'confluence.atlassian.com'
+];
+
 const verifyUrlReachability = async (url) => {
-  const isYoutube = /youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\//i.test(url);
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    if (AUTH_REQUIRED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))) {
+      return true;
+    }
+  } catch (e) {
+    return false;
+  }
+
+  const isYoutube = /youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\
   if (isYoutube) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -48,25 +71,34 @@ const verifyUrlReachability = async (url) => {
     let response = await fetch(url, {
       method: 'HEAD',
       signal: controller.signal,
-      redirect: 'follow'
+      redirect: 'follow',
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; URLShortener/1.0)' }
     });
 
-    if (!response.ok || response.status === 405 || response.status === 403) {
-      clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
+
+    if (response.status === 401 || response.status === 403 || response.status === 407) {
+      return true;
+    }
+
+    if (!response.ok || response.status === 405) {
       const getController = new AbortController();
       const getTimeoutId = setTimeout(() => getController.abort(), 5000);
 
       response = await fetch(url, {
         method: 'GET',
         signal: getController.signal,
-        redirect: 'follow'
+        redirect: 'follow',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; URLShortener/1.0)' }
       });
       clearTimeout(getTimeoutId);
-    } else {
-      clearTimeout(timeoutId);
+
+      if (response.status === 401 || response.status === 403 || response.status === 407) {
+        return true;
+      }
     }
 
-    return response.status >= 200 && response.status < 300;
+    return response.status >= 200 && response.status < 400;
   } catch (error) {
     clearTimeout(timeoutId);
     return false;
@@ -75,8 +107,8 @@ const verifyUrlReachability = async (url) => {
 
 export const shortenUrl = async (req, res, next) => {
   try {
-    const { 
-      originalUrl, customCode, title, password, expiresAt, maxClicks, tags, 
+    const {
+      originalUrl, customCode, title, password, expiresAt, maxClicks, tags,
       isOneTimeUse, folderId,
       isABTest, abDestinations,
       isGeoRouting, geoTargets,
@@ -89,9 +121,9 @@ export const shortenUrl = async (req, res, next) => {
     }
 
     const urlsToValidate = [];
-    
+
     let mainUrl = originalUrl.trim();
-    if (!/^https?:\/\//i.test(mainUrl)) {
+    if (!/^https?:\/\
       mainUrl = 'http://' + mainUrl;
     }
     urlsToValidate.push(mainUrl);
@@ -100,7 +132,7 @@ export const shortenUrl = async (req, res, next) => {
       abDestinations.forEach((d) => {
         if (d.url && d.url.trim().length > 0) {
           let u = d.url.trim();
-          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
+          if (!/^https?:\/\
           urlsToValidate.push(u);
         }
       });
@@ -110,7 +142,7 @@ export const shortenUrl = async (req, res, next) => {
       geoTargets.forEach((g) => {
         if (g.url && g.url.trim().length > 0) {
           let u = g.url.trim();
-          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
+          if (!/^https?:\/\
           urlsToValidate.push(u);
         }
       });
@@ -120,7 +152,7 @@ export const shortenUrl = async (req, res, next) => {
       deviceTargets.forEach((d) => {
         if (d.url && d.url.trim().length > 0) {
           let u = d.url.trim();
-          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
+          if (!/^https?:\/\
           urlsToValidate.push(u);
         }
       });
@@ -130,7 +162,7 @@ export const shortenUrl = async (req, res, next) => {
       scheduledTargets.forEach((s) => {
         if (s.url && s.url.trim().length > 0) {
           let u = s.url.trim();
-          if (!/^https?:\/\//i.test(u)) u = 'http://' + u;
+          if (!/^https?:\/\
           urlsToValidate.push(u);
         }
       });
@@ -178,7 +210,7 @@ export const shortenUrl = async (req, res, next) => {
       if (!/^[a-zA-Z0-9_-]+$/.test(trimmedCode)) {
         throw new BadRequestError('Custom code can only contain alphanumeric characters, hyphens, and underscores');
       }
-      
+
       const existingUrl = await Url.findOne({ shortCode: trimmedCode });
       if (existingUrl) {
         throw new BadRequestError('Custom alias is already in use');
@@ -296,7 +328,7 @@ export const shortenUrl = async (req, res, next) => {
     };
 
     const savedUrl = await urlRepository.create(newUrlObj);
-    
+
     res.status(201).json({
       success: true,
       message: 'URL shortened successfully',
@@ -329,7 +361,7 @@ export const bulkShorten = async (req, res, next) => {
     for (const link of links) {
       try {
         let urlString = link.originalUrl.trim();
-        if (!/^https?:\/\//i.test(urlString)) {
+        if (!/^https?:\/\
           urlString = 'http://' + urlString;
         }
 
@@ -372,7 +404,7 @@ export const bulkShorten = async (req, res, next) => {
           creator: user._id,
           workspace: workspaceId
         };
-        
+
         const saved = await urlRepository.create(newUrlObj);
         results.push(saved);
       } catch (err) {
@@ -397,7 +429,7 @@ export const getMyUrls = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
 
-    const urls = await Url.find({ 
+    const urls = await Url.find({
       workspace: user.activeWorkspace,
       isArchived: false
     }).sort({ createdAt: -1 });
@@ -415,7 +447,7 @@ export const getArchivedUrls = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
 
-    const urls = await Url.find({ 
+    const urls = await Url.find({
       workspace: user.activeWorkspace,
       isArchived: true
     }).sort({ createdAt: -1 });
@@ -513,7 +545,7 @@ export const getQrCode = async (req, res, next) => {
       width: 300,
       color: { dark: '#0f172a', light: '#ffffff' }
     });
-    
+
     res.json({
       success: true,
       message: 'QR Code generated successfully',
@@ -552,7 +584,7 @@ export const updateUrl = async (req, res, next) => {
 
     if (originalUrl !== undefined) {
       let urlString = originalUrl.trim();
-      if (!/^https?:\/\//i.test(urlString)) {
+      if (!/^https?:\/\
         urlString = 'http://' + urlString;
       }
       url.originalUrl = urlString;
@@ -564,7 +596,7 @@ export const updateUrl = async (req, res, next) => {
     }
 
     const saved = await url.save();
-    
+
     res.json({
       success: true,
       message: 'URL updated successfully',
@@ -606,7 +638,7 @@ export const deleteUrl = async (req, res, next) => {
     if (!workspace) {
       throw new NotFoundError('Workspace not found');
     }
-    
+
     const isMember = workspace.owner.toString() === req.user.id ||
                      workspace.members.some(m => m.user.toString() === req.user.id && (m.role === 'admin' || m.role === 'editor'));
 
@@ -631,7 +663,7 @@ export const getAiAlias = (req, res, next) => {
   try {
     const { originalUrl } = req.body;
     const suggestions = AIService.generateMultipleAliases(originalUrl || '');
-    
+
     res.json({
       success: true,
       message: 'AI alias suggestions generated successfully',
@@ -648,7 +680,7 @@ export const getAiAliases = (req, res, next) => {
   try {
     const { originalUrl } = req.body;
     const suggestions = AIService.generateMultipleAliases(originalUrl || '');
-    
+
     res.json({
       success: true,
       message: 'AI alias suggestions generated successfully',
@@ -667,7 +699,7 @@ export const getAiSuggestedName = (req, res, next) => {
       throw new BadRequestError('Original URL is required');
     }
     const suggestion = AIService.suggestName(originalUrl);
-    
+
     res.json({
       success: true,
       message: 'AI name suggestion generated successfully',
@@ -686,7 +718,7 @@ export const getAiPhishingCheck = async (req, res, next) => {
       throw new BadRequestError('URL is required');
     }
     const report = await AIService.detectPhishing(url);
-    
+
     res.json({
       success: true,
       message: 'AI safety check completed successfully',
@@ -706,7 +738,7 @@ export const getPreview = async (req, res, next) => {
     }
 
     let urlString = originalUrl.trim();
-    if (!/^https?:\/\//i.test(urlString)) {
+    if (!/^https?:\/\
       urlString = 'http://' + urlString;
     }
 

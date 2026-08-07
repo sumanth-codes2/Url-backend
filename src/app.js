@@ -17,12 +17,12 @@ import swaggerRoutes from './routes/swaggerRoutes.js';
 import redirectRoutes from './routes/redirectRoutes.js';
 
 import { ServiceRegistry } from './services/serviceRegistry.js';
-import { 
-  AnalyticsAIService, 
-  MarketingAIService, 
-  SecurityAIService, 
-  WebsiteIntelligenceService, 
-  PredictionAIService, 
+import {
+  AnalyticsAIService,
+  MarketingAIService,
+  SecurityAIService,
+  WebsiteIntelligenceService,
+  PredictionAIService,
   RecommendationAIService,
   NotificationService,
   AnalyticsService
@@ -62,8 +62,8 @@ app.use((req, res, next) => {
   next();
 });
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 app.use(cors({
@@ -86,7 +86,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', async (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   const status = dbStatus === 'connected' ? 'healthy' : 'unhealthy';
-  
+
   res.status(status === 'healthy' ? 200 : 503).json({
     status,
     timestamp: new Date(),

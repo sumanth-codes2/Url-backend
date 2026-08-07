@@ -7,7 +7,7 @@ export const getStats = async (req, res, next) => {
   try {
     const totalUsers = await userRepository.findAll();
     const totalLinks = await urlRepository.findAll();
-    
+
     const clickSummary = await Url.aggregate([
       { $group: { _id: null, total: { $sum: "$clicks" } } }
     ]);

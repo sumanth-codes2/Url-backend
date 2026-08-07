@@ -19,12 +19,12 @@ export class GeminiProvider {
 
     const client = this.getClient();
     const contents = [];
-    
+
     contents.push({
       role: 'user',
       parts: [{ text: 'SYSTEM CONTEXT DATA:\n' + contextJson + '\n\nUse this data to ground your answers.' }]
     });
-    
+
     contents.push({
       role: 'model',
       parts: [{ text: "Understood. I will ground my business intelligence analysis strictly in the provided JSON data." }]

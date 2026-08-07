@@ -15,7 +15,7 @@ export const env = {
   MONGODB_URI: process.env.MONGODB_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   NODE_ENV: process.env.NODE_ENV || 'development',
-  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',') 
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
     : ['http://localhost:5173', 'http://127.0.0.1:5173']
 };

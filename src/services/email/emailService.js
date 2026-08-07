@@ -22,20 +22,14 @@ export class EmailService {
       text,
       html
     };
-
-    // 1. If Resend is configured, use it. If it fails, throw immediately (do not fallback).
     if (this.resendProvider.isAvailable()) {
       logger.info('EmailService: Attempting email dispatch via Resend (Primary)...');
       return await this.resendProvider.send(emailPayload);
     }
-
-    // 2. If Gmail is configured, use it. If it fails, throw immediately (do not fallback).
     if (this.gmailProvider.isAvailable()) {
       logger.info('EmailService: Attempting email dispatch via Gmail SMTP...');
       return await this.gmailProvider.send(emailPayload);
     }
-
-    // 3. Fallback to Ethereal in development only if no other provider is configured.
     if (this.etherealProvider.isAvailable()) {
       logger.info('EmailService: Attempting email dispatch via Ethereal SMTP...');
       return await this.etherealProvider.send(emailPayload);

@@ -1,6 +1,6 @@
 import express from 'express';
-import { 
-  getAnalytics, getAiInsights, getAiPredictions, exportCsv, chatAnalytics 
+import {
+  getAnalytics, getAiInsights, getAiPredictions, exportCsv, chatAnalytics
 } from '../controllers/analyticsController.js';
 import { auth } from '../shared/middleware/auth.js';
 

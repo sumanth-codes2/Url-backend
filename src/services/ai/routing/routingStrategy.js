@@ -49,7 +49,7 @@ export class ABTestRoutingStrategy {
       const totalWeight = url.abDestinations.reduce((acc, curr) => acc + curr.weight, 0);
       const rand = Math.floor(Math.random() * totalWeight) + 1;
       let cumulative = 0;
-      
+
       for (const dest of url.abDestinations) {
         cumulative += dest.weight;
         if (rand <= cumulative) {

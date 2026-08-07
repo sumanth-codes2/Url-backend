@@ -69,7 +69,7 @@ export const handleRedirect = async (req, res, next) => {
     const userAgent = req.headers['user-agent'] || '';
     const referrerHeader = req.headers['referer'] || req.headers['referrer'] || '';
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
-    
+
     const geo = await GeoIpService.lookup(ipAddress);
 
     const routingContext = ServiceRegistry.get('RoutingContext');
@@ -81,7 +81,7 @@ export const handleRedirect = async (req, res, next) => {
     });
 
     url.clicks += 1;
-    
+
     if (url.creator) {
       const notificationService = ServiceRegistry.get('NotificationService');
       const createNotification = async (milestone) => {

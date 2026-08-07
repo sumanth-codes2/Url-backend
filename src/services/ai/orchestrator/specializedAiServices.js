@@ -16,11 +16,11 @@ export class AnalyticsAIService extends BaseAIService {
     }
 
     const topReferrer = referrers.length > 0 ? referrers[0]._id : 'Direct';
-    
+
     const desktopHits = devices.find(d => d._id === 'Desktop')?.count || 0;
     const mobileHits = devices.find(d => d._id === 'Mobile')?.count || 0;
     const tabletHits = devices.find(d => d._id === 'Tablet')?.count || 0;
-    
+
     let deviceDominance = 'Desktop';
     if (mobileHits > desktopHits && mobileHits > tabletHits) {
       deviceDominance = 'Mobile';
@@ -32,7 +32,7 @@ export class AnalyticsAIService extends BaseAIService {
 
     let insight = 'Audience report logs solid acquisition activity with ' + clicks + ' total clicks. ';
     insight += 'Your workspace traffic is heavily dominated by ' + deviceDominance + ' users (' + deviceRatio + '% of traffic). ';
-    
+
     if (topReferrer !== 'Direct') {
       insight += 'Visitor acquisition channels are strongest via ' + topReferrer + ', indicating great campaign sharing. ';
     } else {
@@ -57,7 +57,7 @@ export class MarketingAIService extends BaseAIService {
   generateMarketingContent(url, category, title) {
     const cleanTitle = title || 'Shared Link';
     const hashtags = [category.toLowerCase(), 'marketing', 'sharing', 'growonline'];
-    
+
     return {
       linkedin: `🚀 Check out this interesting resource under ${category}: "${cleanTitle}". Highly recommended for professionals looking to optimize their workflow. Read more details here: ${url} #ProfessionalGrowth #Workflow`,
       twitter: `💡 Just discovered this great link: "${cleanTitle}". Categorized under #${category}. Check it out: ${url}`,
@@ -81,7 +81,7 @@ export class SecurityAIService extends BaseAIService {
       const parsedUrl = new URL(url);
       const host = parsedUrl.hostname.toLowerCase();
       const path = parsedUrl.pathname.toLowerCase();
-      
+
       let threatScore = 0;
       const detectedKeywords = [];
       const riskFactors = [];
@@ -97,7 +97,7 @@ export class SecurityAIService extends BaseAIService {
 
       const suspiciousKeywords = [
         'login', 'signin', 'verification', 'update-profile', 'secure-bank',
-        'paypal-verify', 'recover-account', 'invoice-pay', 'secure-billing', 
+        'paypal-verify', 'recover-account', 'invoice-pay', 'secure-billing',
         'update-card', 'support-resolution', 'reconfirm', 'security-alert',
         'replica', 'clone', 'fake', 'spoof', 'copy', 'mock'
       ];
@@ -128,8 +128,8 @@ export class SecurityAIService extends BaseAIService {
       }
 
       const brands = [
-        'google', 'facebook', 'microsoft', 'netflix', 'paypal', 'amazon', 'apple', 'linkedin', 
-        'chase', 'instagram', 'usbank', 'wellsfargo', 'citi', 'citibank', 'hsbc', 'barclays', 
+        'google', 'facebook', 'microsoft', 'netflix', 'paypal', 'amazon', 'apple', 'linkedin',
+        'chase', 'instagram', 'usbank', 'wellsfargo', 'citi', 'citibank', 'hsbc', 'barclays',
         'bankofamerica', 'coinbase', 'binance', 'metamask', 'stripe', 'venmo', 'cashapp'
       ];
       const matchedBrand = brands.find(b => host.includes(b));
@@ -143,8 +143,8 @@ export class SecurityAIService extends BaseAIService {
       }
 
       const freeHosts = [
-        'vercel.app', 'netlify.app', 'github.io', 'pages.dev', 'web.app', 
-        'firebaseapp.com', 'herokuapp.com', '000webhostapp.com', 'ngrok.io', 
+        'vercel.app', 'netlify.app', 'github.io', 'pages.dev', 'web.app',
+        'firebaseapp.com', 'herokuapp.com', '000webhostapp.com', 'ngrok.io',
         'glitch.me', 'repl.co', 'replit.app', 'surge.sh', 'render.com', 'fly.dev'
       ];
       const isFreeHost = freeHosts.some(fh => host.endsWith(fh) && host !== fh);
@@ -246,7 +246,7 @@ export class SecurityAIService extends BaseAIService {
         }
 
         const phishingTexts = [
-          'verify your card', 'account suspended', 'unusual activity', 
+          'verify your card', 'account suspended', 'unusual activity',
           'confirm login details', 'payout alert', 'security authentication required'
         ];
         for (const phishText of phishingTexts) {
@@ -346,7 +346,7 @@ export class SecurityAIService extends BaseAIService {
         const res = await fetch(targetUrl, {
           method,
           redirect: 'manual',
-          headers: { 
+          headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 BitylGlow/2.0',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5'
@@ -366,7 +366,7 @@ export class SecurityAIService extends BaseAIService {
         sslValid = parsedUrl.protocol === 'https:';
 
         let { res, err } = await performRequest(currentUrl, 'HEAD');
-        
+
         if (!res || res.status >= 400) {
           const getResult = await performRequest(currentUrl, 'GET');
           if (getResult.res) {
@@ -418,7 +418,7 @@ export class SecurityAIService extends BaseAIService {
     }
 
     let score = 0;
-    
+
     if (isReachable || innerMetadataExtracted) {
       score += 30;
     }
@@ -518,7 +518,7 @@ export class WebsiteIntelligenceService extends BaseAIService {
       if (hostParts.length > 0 && hostParts[0]) {
         baseKeyword = hostParts[0].toLowerCase();
       }
-      
+
       const pathParts = parsed.pathname.split('/').filter(Boolean);
       if (pathParts.length > 0) {
         baseKeyword = pathParts[pathParts.length - 1].replace(/[-_]/g, '').toLowerCase().slice(0, 10);
@@ -550,7 +550,7 @@ export class WebsiteIntelligenceService extends BaseAIService {
         .slice(0, -1)
         .map(p => p.charAt(0).toUpperCase() + p.slice(1))
         .join(' ');
-      
+
       return `${cleanHost} Portal`;
     } catch (err) {
       return 'AI Suggestion Name';
@@ -627,7 +627,7 @@ export class WebsiteIntelligenceService extends BaseAIService {
         }
 
         const contentSample = `${title} ${description} ${bodyContent.slice(0, 1000)}`.toLowerCase();
-        
+
         if (contentSample.match(/code|programming|github|developer|software|tech|data|system/i)) {
           category = 'Technology';
           tags = ['technology', 'programming', 'dev'];
@@ -664,7 +664,7 @@ export class WebsiteIntelligenceService extends BaseAIService {
       healthDetails = health.details;
     } catch (e) {
       summary = `Web resource resolved successfully. AI classified category: ${category}. Standard content preview active.`;
-      
+
       try {
         const securityService = ServiceRegistry.get('SecurityAIService');
         const health = await securityService.calculateLinkHealth(url, metadataWasExtracted);
@@ -710,7 +710,7 @@ export class PredictionAIService extends BaseAIService {
     const sorted = [...clicksTimeline].sort((a, b) => a.date.localeCompare(b.date));
     let lastClicks = sorted[sorted.length - 1].clicks;
     const lastDate = new Date(sorted[sorted.length - 1].date);
-    
+
     let trendFactor = 2;
     if (sorted.length >= 2) {
       const diff = sorted[sorted.length - 1].clicks - sorted[0].clicks;
@@ -721,7 +721,7 @@ export class PredictionAIService extends BaseAIService {
     for (let i = 1; i <= 3; i++) {
       const nextDate = new Date(lastDate);
       nextDate.setDate(nextDate.getDate() + i);
-      
+
       const forecastVal = Math.round(lastClicks + (trendFactor * i));
       predictions.push({
         date: nextDate.toISOString().substring(0, 10),
@@ -740,7 +740,7 @@ export class RecommendationAIService extends BaseAIService {
 
   generateRecommendations(urls, analytics) {
     const recommendations = [];
-    
+
     if (urls.length === 0) {
       return [{
         title: 'Create your first link',

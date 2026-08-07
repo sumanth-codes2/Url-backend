@@ -1,6 +1,6 @@
 import express from 'express';
-import { 
-  getStats, getUsers, updateUserRole, getLinks 
+import {
+  getStats, getUsers, updateUserRole, getLinks
 } from '../controllers/adminController.js';
 import { auth, adminOnly } from '../shared/middleware/auth.js';
 

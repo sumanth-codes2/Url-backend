@@ -1,6 +1,6 @@
 import express from 'express';
-import { 
-  getWorkspaces, createWorkspace, inviteMember, switchWorkspace, 
+import {
+  getWorkspaces, createWorkspace, inviteMember, switchWorkspace,
   getFolders, createFolder, deleteFolder, getAiRecommendations, removeMember
 } from '../controllers/workspaceController.js';
 import { auth } from '../shared/middleware/auth.js';

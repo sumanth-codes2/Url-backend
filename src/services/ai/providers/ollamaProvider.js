@@ -2,10 +2,8 @@ import logger from '../../../shared/logger/logger.js';
 
 export class OllamaProvider {
   static async generate(systemPrompt, history, contextJson, userQuery) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OLLAMA_API_KEY;
     const model = process.env.OLLAMA_MODEL || 'gpt-oss:20b';
-    
-    // We try cloud Ollama first, then fall back to local Ollama if cloud fails
     const endpoints = [
       { url: 'https://ollama.com/api/chat', headers: { 'Authorization': `Bearer ${apiKey}` } },
       { url: 'http://localhost:11434/api/chat', headers: {} }
@@ -33,7 +31,7 @@ export class OllamaProvider {
     for (const endpoint of endpoints) {
       try {
         logger.info(`OllamaProvider: Attempting call to ${endpoint.url} with model ${model}`);
-        
+
         const response = await fetch(endpoint.url, {
           method: 'POST',
           headers: {

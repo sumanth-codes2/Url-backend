@@ -7,7 +7,7 @@ export class GmailProvider {
   }
 
   isAvailable() {
-    return !!(process.env.GMAIL_USER && process.env.GMAIL_PASS && 
+    return !!(process.env.GMAIL_USER && process.env.GMAIL_PASS &&
               !process.env.GMAIL_USER.includes('your_gmail_username'));
   }
 
@@ -22,12 +22,10 @@ export class GmailProvider {
         pass: process.env.GMAIL_PASS
       }
     });
-
-    // Verify SMTP connection
     logger.info('GmailProvider: Verifying SMTP connection...');
     await this.transporter.verify();
     logger.info('GmailProvider: SMTP transporter verified and connected successfully.');
-    
+
     return this.transporter;
   }
 

@@ -1,9 +1,9 @@
 import express from 'express';
-import { 
-  shortenUrl, bulkShorten, getMyUrls, getArchivedUrls, getFolderUrls, 
-  verifyPassword, getQrCode, updateUrl, bulkDeleteUrls, deleteUrl, 
-  getAiAlias, getAiAliases, getAiSuggestedName, getAiPhishingCheck, 
-  getPreview, getAiMarketing 
+import {
+  shortenUrl, bulkShorten, getMyUrls, getArchivedUrls, getFolderUrls,
+  verifyPassword, getQrCode, updateUrl, bulkDeleteUrls, deleteUrl,
+  getAiAlias, getAiAliases, getAiSuggestedName, getAiPhishingCheck,
+  getPreview, getAiMarketing
 } from '../controllers/urlController.js';
 import { auth, optionalAuth } from '../shared/middleware/auth.js';
 import { validateUrlShorten } from '../validators/urlValidator.js';

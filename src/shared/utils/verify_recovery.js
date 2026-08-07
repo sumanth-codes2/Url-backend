@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
-
-// Load env variables from backend root directory
 dotenv.config({ path: 'c:/Users/SUMANTH/OneDrive/Url_Shortner/backend/.env' });
 
 if (process.env.GMAIL_USER && process.env.GMAIL_USER.includes('your_gmail_username')) {
@@ -19,21 +17,15 @@ const NEW_PASSWORD = 'NewPassword123!';
 
 async function runTests() {
   console.log('--- Starting Password Recovery Workflow Verification Tests ---');
-
-  // Connect to database directly for setup/cleanup
   const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/url_shortener';
   console.log(`Connecting to database: ${mongoUri}`);
   await mongoose.connect(mongoUri);
-
-  // Clean up any existing test user
   const existingUser = await mongoose.connection.collection('users').findOne({ email: TEST_EMAIL });
   if (existingUser) {
     await mongoose.connection.collection('workspaces').deleteMany({ owner: existingUser._id });
     await mongoose.connection.collection('users').deleteOne({ _id: existingUser._id });
   }
   await mongoose.connection.collection('passwordresets').deleteMany({});
-
-  // 1. Verify Non-existing User
   console.log('\n1. Verifying Non-existing User...');
   const res1 = await fetch(`${API_BASE}/forgot-password`, {
     method: 'POST',
@@ -51,8 +43,6 @@ async function runTests() {
     throw new Error('Non-existing user generated a PasswordReset record! Security violation.');
   }
   console.log('✓ Non-existing user generic response verified.');
-
-  // Create test user for remaining tests
   const bcrypt = await import('bcryptjs');
   const salt = await bcrypt.default.genSalt(10);
   const hashedPassword = await bcrypt.default.hash(OLD_PASSWORD, salt);
@@ -65,8 +55,6 @@ async function runTests() {
     updatedAt: new Date()
   });
   console.log(`\nCreated test user: ${TEST_EMAIL} with password: ${OLD_PASSWORD}`);
-
-  // Create a default workspace/dashboard for this test user so recovery succeeds
   await mongoose.connection.collection('workspaces').insertOne({
     name: `${TEST_USER}'s Workspace`,
     owner: userInsertResult.insertedId,
@@ -74,12 +62,10 @@ async function runTests() {
     createdAt: new Date()
   });
   console.log('Created test user default workspace/dashboard.');
-
-  // 2. Request OTP for existing user
   console.log('\n2. Requesting OTP for existing user...');
   const res2 = await fetch(`${API_BASE}/forgot-password`, {
     method: 'POST',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
       'x-test-bypass': 'true'
     },
@@ -98,8 +84,6 @@ async function runTests() {
     throw new Error('No PasswordReset document saved in database.');
   }
   console.log('Hashed OTP in database:', activeReset.hashedOTP);
-
-  // 3. Verify Wrong OTP Rejected
   console.log('\n3. Verifying Wrong OTP Rejected...');
   const res3 = await fetch(`${API_BASE}/verify-otp`, {
     method: 'POST',
@@ -113,10 +97,7 @@ async function runTests() {
     throw new Error('Wrong OTP was accepted!');
   }
   console.log('✓ Wrong OTP rejected correctly.');
-
-  // 4. Verify Expired OTP Rejected
   console.log('\n4. Verifying Expired OTP Rejected...');
-  // Force expire in DB
   await mongoose.connection.collection('passwordresets').updateOne(
     { _id: activeReset._id },
     { $set: { expiresAt: new Date(Date.now() - 10000) } }
@@ -134,12 +115,10 @@ async function runTests() {
     throw new Error('Expired OTP was accepted!');
   }
   console.log('✓ Expired OTP rejected correctly.');
-
-  // Regenerate OTP for successful flow
   console.log('\n5. Regenerating OTP for successful flow...');
   const resOtpRegen = await fetch(`${API_BASE}/forgot-password`, {
     method: 'POST',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
       'x-test-bypass': 'true'
     },
@@ -148,8 +127,6 @@ async function runTests() {
   const dataRegen = await resOtpRegen.json();
   const validOtp = dataRegen.otp;
   console.log(`New OTP: ${validOtp}`);
-
-  // 5. Verify Correct OTP Accepted
   console.log('\n6. Verifying Correct OTP Accepted...');
   const res5 = await fetch(`${API_BASE}/verify-otp`, {
     method: 'POST',
@@ -164,15 +141,11 @@ async function runTests() {
   }
   const resetToken = data5.resetToken;
   console.log('✓ Correct OTP accepted. Reset token received.');
-
-  // Verify OTP document was deleted (Replay protection)
   const remainingResets = await mongoose.connection.collection('passwordresets').countDocuments({});
   if (remainingResets !== 0) {
     throw new Error('PasswordReset document not deleted after successful verification!');
   }
   console.log('✓ Replay protection verified (OTP document deleted).');
-
-  // 6. Reset Password Succeeds
   console.log('\n7. Performing password reset...');
   const res6 = await fetch(`${API_BASE}/reset-password`, {
     method: 'POST',
@@ -190,8 +163,6 @@ async function runTests() {
     throw new Error('Password reset failed.');
   }
   console.log('✓ Password reset succeeded.');
-
-  // 7. Verify login with new password succeeds, and old fails
   console.log('\n8. Verifying login behaviors...');
   const resLoginOld = await fetch(`${API_BASE}/login`, {
     method: 'POST',
@@ -215,8 +186,6 @@ async function runTests() {
     throw new Error('Failed to log in with new password.');
   }
   console.log('✓ Password change verification completed: login succeeds with new password, fails with old password.');
-
-  // Cleanup
   const testUserEnd = await mongoose.connection.collection('users').findOne({ email: TEST_EMAIL });
   if (testUserEnd) {
     await mongoose.connection.collection('workspaces').deleteMany({ owner: testUserEnd._id });

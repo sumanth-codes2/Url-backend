@@ -1,7 +1,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { 
-  register, login, logout, getProfile, 
+import {
+  register, login, logout, getProfile,
   getNotifications, readNotification, readAllNotifications,
   forgotPassword, verifyOtp, resetPassword, changePassword
 } from '../controllers/authController.js';
@@ -9,8 +9,6 @@ import { auth } from '../shared/middleware/auth.js';
 import { validateRegister, validateLogin } from '../validators/authValidator.js';
 
 const router = express.Router();
-
-// Limit forgot-password requests to 3 requests per 15 minutes (or 1000 in dev)
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 3 : 1000,
@@ -21,8 +19,6 @@ const forgotPasswordLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
-// Limit verify-otp attempts to 5 attempts per 15 minutes (or 1000 in dev)
 const verifyOtpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 5 : 1000,

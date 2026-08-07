@@ -7,7 +7,6 @@ export class EtherealProvider {
   }
 
   isAvailable() {
-    // Development or fallback development environment helper
     return process.env.NODE_ENV !== 'production' || !process.env.RESEND_API_KEY;
   }
 
@@ -16,7 +15,7 @@ export class EtherealProvider {
 
     logger.info('EtherealProvider: Generating mock test account for local SMTP testing...');
     const testAccount = await nodemailer.createTestAccount();
-    
+
     this.transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
